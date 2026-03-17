@@ -1,13 +1,12 @@
 #include <iostream>
 #include <vector>
-#include <arena.h>
+#include <include/arena.h>
 #include <random>
 
-#include <params.h>
-#include <operations.h>
-#include <generation.h>
-#include <draw.h>
-
+#include "include/params.h"
+#include "include/operations.h"
+#include "include/generation.h"
+#include "include/draw.h"
 using namespace std;
 
 

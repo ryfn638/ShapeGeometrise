@@ -1,19 +1,21 @@
 #include <iostream>
 #include <vector>
-#include <arena.h>
+#include "include/arena.h"
 #include <random>
 
-#include <params.h>
-#include <operations.h>
-#include <generation.h>
-#include <draw.h>
-#include <pipeline.h>
+#include "include/params.h"
+#include "include/operations.h"
+#include "include/generation.h"
+#include "include/draw.h"
+#include "include/pipeline.h"
 
 #include <cstdlib>
-using namespace std;
+
 
 #include <filesystem>
 #include <string>
+
+using namespace std;
 
 namespace fs = std::filesystem;
 
@@ -33,10 +35,9 @@ int main()
         // Iterate over all entries in the directory
         for (const auto& entry : fs::directory_iterator("shapes")) {
             std::vector<std::vector<int>> mask;
-            create_mask(mask, entry.path());
+            create_mask(mask, entry.path().string());
             all_masks.push_back(mask);
 
-            delete mask;
         }
     } catch (const fs::filesystem_error& e) {
         std::cerr << "Filesystem error: " << e.what() << std::endl;

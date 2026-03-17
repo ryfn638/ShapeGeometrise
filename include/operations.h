@@ -45,11 +45,11 @@ void change_colour(shape_t &baseShape, float scale_R, float scale_G, float scale
 /*
 * Creates a mask for an image, this is just used to identify which pixels are covered by the shape
 */
-void create_mask(std::vector<std::vector<int>> &mask, string filepath);
+void create_mask(std::vector<std::vector<int>> &mask, std::string filepath);
 
 /*
 * Adjusts the opacity of an existing shape
 */
 void change_opacity(shape_t &baseShape, float scale);
 
-void shift_position(shape_t &baseShape, float movePercentage_x, float movePercentage_y)
+void shift_position(shape_t &baseShape, float movePercentage_x, float movePercentage_y);

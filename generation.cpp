@@ -1,11 +1,11 @@
 #include <iostream>
 #include <vector>
-#include <arena.h>
 #include <random>
 
-#include <params.h>
-#include <operations.h>
-#include <generation.h>
+#include "include/arena.h"
+#include "include/params.h"
+#include "include/operations.h"
+#include "include/generation.h"
 
 #include <cstdlib> // Required for rand() and srand()
 using namespace std;

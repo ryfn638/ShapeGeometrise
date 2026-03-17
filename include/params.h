@@ -1,5 +1,5 @@
 // Constants for generation 
-int NUM_SHAPES;
-int NUM_GENERATIONS;
-int IMG_WIDTH;
-int IMG_HEIGHT;
+extern int NUM_SHAPES;
+extern int NUM_GENERATIONS;
+extern int IMG_WIDTH;
+extern int IMG_HEIGHT;

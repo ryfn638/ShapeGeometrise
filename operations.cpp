@@ -1,7 +1,7 @@
-#include <operations.h>
+#include "include/operations.h"
 #include <vector>
 #include <cmath>
-#include <params.h>
+#include "include/params.h"
 
 // Image reading utilities
 #include <opencv2/core.hpp>
