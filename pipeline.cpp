@@ -38,24 +38,33 @@ std::vector<std::vector<Colour>> createCanvas(int width = IMG_WIDTH, int height 
 
     return canvas;
 }
-void find_best_shape(int num_generations = NUM_GENERATIONS)
+
+shape_t find_best_shape(std::vector<std::vector<Colour>> canvas, std::vector<std::vector<std::vector<int>>> all_masks, int num_generations = NUM_GENERATIONS)
 {
     shape_t top_shape;
     for (int i = 0; i < num_generations; i++) {
-        top_shape = createGeneration(&top_shape, canvas)
+        top_shape = createGeneration(top_shape, canvas, all_masks);
     }
+    return top_shape;
 }
 
-void draw_shapes(int num_shapes = NUM_SHAPES)
+bool draw_shapes(vector<vector<Colour>> canvas, std::vector<std::vector<std::vector<int>>> all_masks, int num_shapes = NUM_SHAPES) 
 {
-    Frame frame = new Frame();
+    Frame frame;
+
+    vector<vector<Colour>> canvasCopy = canvas;
+
     for (int shape = 0; shape < num_shapes; shape++)
     {
-        shape_t best_shape = find_best_shape();
+        shape_t best_shape = find_best_shape(canvasCopy, all_masks);
+        project_canvas(canvasCopy, best_shape);
+
         Frame.all_shapes.push_back(best_shape);
     }
 
     Frame.visualise_canvas();
+
+    return true; // Returns True if the function runs successfully
 }
 
 
