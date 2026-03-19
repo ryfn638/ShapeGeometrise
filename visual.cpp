@@ -22,6 +22,6 @@ class Frame
     * hey maybe could do this in 3 dimensions perhaps???
     */
     void visualise_canvas();
-}
+};
 
 

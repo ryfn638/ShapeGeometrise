@@ -46,7 +46,8 @@ int main()
     // Create the canvas
     vector<vector<Colour>> canvas = createCanvas();
 
-    // Find the best shapes and draw them
-    find_best_shape();
+    // Find the best shapes and draw them on to the canvas
+    bool out = draw_shapes(canvas, all_masks);
+
 
 }

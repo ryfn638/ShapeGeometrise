@@ -29,49 +29,9 @@ int IMG_HEIGHT = 500;
 /*
 * Create a Singular generation, This accommodates the first generation as well
 */
-shape_t createGeneration(shape_t const &bestShape, vector<vector<Colour>> const canvas, vector<std::vector<std::vector<Colour>>> const all_masks)
-{
-    // Create a new memory arena for each generation, deallocate each generation after we're done with it
-    std::vector<shape_t> generation;
-    uint32_t min_canvas_score = 1e32;
-    uint32_t curr_canvas_score;
-
-    uint32_t min_canvas_score_idx;
-    generation.reserve(NUM_SHAPES); // avoid multiple reallocations
-
-    int mask_idx = 0;
-
-    // so theres an even distribution of different shapes, also i cant be bothered with random
-    int mask_swap = NUM_SHAPES / size(all_masks);
-
-    for (int i = 0; i < NUM_SHAPES; i++) {
-
-        vector<vector<Colour>> canvas_copy = canvas;
-        if (i >= (mask_idx+1) * mask_swap)
-        {
-            mask_idx++;
-        }
-
-        generation.push_back(createShape(bestShape, all_masks[mask_idx]));
-        project_canvas(canvas_copy, generation[i]);
 
 
-        curr_canvas_score = calculateCanvasScore(canvas_copy, generation[i]);
-
-        // mark the index which has the best canvas score
-        if (curr_canvas_score < min_canvas_score)
-        {
-            min_canvas_score = curr_canvas_score;
-            min_canvas_score_idx = i;
-        }
-    }
-
-    // Return the best shape
-    return generation[min_canvas_score_idx];
-
-}
-
-shape_t createShape(shape_t *baseShape, vector<vector<int>> maskType)
+shape_t createShape(shape_t *baseShape, std::vector<std::vector<int>> maskType)
 {
     std::random_device rd;  // Seed
     std::mt19937 gen(rd()); // Generator
@@ -91,7 +51,7 @@ shape_t createShape(shape_t *baseShape, vector<vector<int>> maskType)
         newShape.colour.green = dis(gen) * 255;
 
         newShape.mask = maskType;
-        rotate_shape(newShape, dis(gen)) // give it some random rotation
+        rotate_shape(newShape, dis(gen)); // give it some random rotation
     
         // 
         // Generate a completely random shape
@@ -99,44 +59,16 @@ shape_t createShape(shape_t *baseShape, vector<vector<int>> maskType)
         std::uniform_real_distribution<float> dis(0.8f, 1.2f); 
 
         // create a copy of the baseShape
-        shape_t* newShape = new shape_t(*baseShape);
+        shape_t newShape = *baseShape;
 
         scale_shape(newShape, dis(gen), dis(gen), false);
         change_colour(newShape, dis(gen), dis(gen), dis(gen));
         change_opacity(newShape, dis(gen));
         shift_position(newShape, dis(gen), dis(gen));
-        rotate_shape(newShape, dis(gen)) // FIX THIS, READ THE NOTE
+        rotate_shape(newShape, dis(gen)); // FIX THIS, READ THE NOTE
 
     }
     return newShape;
-}
-
-
-int calculateCanvasScore(vector<vector<Colour>> canvas, shape_t shape) {
-    int total_canvas_score = 0;
-    for (int x = 0; x > IMG_WIDTH; x++)
-    {
-        for (int y = 0; y > IMG_HEIGHT; y++)
-        {
-            total_canvas_score += euclidColourDist(canvas[x][y], shape.colour);
-        }
-    }
-
-    return total_canvas_score;
-}
-
-
-// Functions to implement
-void project_canvas(vector<vector<Colour>> &canvas, shape_t shape)
-{
-    for (int x = 0; x > IMG_WIDTH; x++)
-    {
-        for (int y = 0; y > IMG_HEIGHT; y++) 
-        {
-            canvas[x][y] = mix_colours(canvas[x][y], shape.Colour);
-        }
-    }
-    // Project a new colour on to the canvas, ensure that only points inside the canvas are noted.
 }
 
 Colour mix_colours(Colour background, Colour shapeColour)
@@ -159,12 +91,80 @@ int euclidColourDist(Colour p1, Colour p2)
     return int(std::sqrt(std::pow(p2.red-p1.red, 2) + std::pow(p2.green - p1.green, 2) + std::pow(p2.blue - p1.blue, 2)));   
 }
 
+int calculateCanvasScore(std::vector<std::vector<Colour>> canvas, shape_t shape) {
+    int total_canvas_score = 0;
+    for (int x = 0; x < IMG_WIDTH; x++)  // FIX: > -> <
+    {
+        for (int y = 0; y < IMG_HEIGHT; y++)  // FIX: > -> <
+        {
+            total_canvas_score += euclidColourDist(canvas[x][y], shape.colour);
+        }
+    }
+
+    return total_canvas_score;
+}
+
+
+// Functions to implement
+void project_canvas(std::vector<std::vector<Colour>> &canvas, shape_t shape)
+{
+    for (int x = 0; x < IMG_WIDTH; x++)  // FIX: > -> <
+    {
+        for (int y = 0; y < IMG_HEIGHT; y++)  // FIX: > -> <
+        {
+            canvas[x][y] = mix_colours(canvas[x][y], shape.colour);
+        }
+    }
+    // Project a new colour on to the canvas, ensure that only points inside the canvas are noted.
+}
+
 /*
 Improvements to make when can be bothered
 - Optimise the mask into a 2D Hash Map for better lookup times
 
 */
 
+shape_t createGeneration(
+    shape_t const &bestShape,
+    std::vector<std::vector<Colour>> const canvas,
+    std::vector<std::vector<std::vector<int>>> const all_masks  // fix: Colour -> int
+    )
+{
+    std::vector<shape_t> generation;
+    uint32_t min_canvas_score = 1e32;
+    uint32_t curr_canvas_score;
+
+    uint32_t min_canvas_score_idx;
+    generation.reserve(NUM_SHAPES); // avoid multiple reallocations
+
+    int mask_idx = 0;
+
+    // so theres an even distribution of different shapes, also i cant be bothered with random
+    int mask_swap = NUM_SHAPES / size(all_masks);
+
+    for (int i = 0; i < NUM_SHAPES; i++) {
+        shape_t currBestShape = bestShape;  // FIX: removed stray *
+        std::vector<std::vector<Colour>> canvas_copy = canvas;
+        if (i >= (mask_idx+1) * mask_swap)
+        {
+            mask_idx++;
+        }
+        
+        generation.push_back(createShape(&currBestShape, all_masks[mask_idx]));  // FIX: & instead of trailing *
+        project_canvas(canvas_copy, generation[i]);
 
 
+        curr_canvas_score = calculateCanvasScore(canvas_copy, generation[i]);
 
+        // mark the index which has the best canvas score
+        if (curr_canvas_score < min_canvas_score)
+        {
+            min_canvas_score = curr_canvas_score;
+            min_canvas_score_idx = i;
+        }
+    }
+
+    // Return the best shape
+    return generation[min_canvas_score_idx];
+
+}

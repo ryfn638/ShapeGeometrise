@@ -2,7 +2,7 @@
 #include <vector>
 #include <cmath>
 #include "include/params.h"
-
+#include <string>
 // Image reading utilities
 #include <opencv2/core.hpp>
 #include <opencv2/imgcodecs.hpp>
@@ -20,42 +20,68 @@ struct Point {
 /*
 * Creates the mask for a shape, this is r
 */
-void createMask(std::vector<std::vector<int>> &mask, double backgorund_lenience=0.9, string filepath) {
-    cv::Mat image = cv::imread(filepath); // Load the image
+void create_mask(std::vector<std::vector<int>> &mask, string filepath, double backgorund_lenience) {  // removed =0.9
+    cv::Mat image = cv::imread(filepath);
 
     if (image.empty()) {
         std::cerr << "Error loading image" << std::endl;
-        return -1;
+        return;  // removed -1
     }
 
-    // This is the value that the algorithm will start to treat something as background, essentially white pixels or pixels
-    // that are very close to white are treated as the background
     int pixel_lenience = 255 * backgorund_lenience;
 
     for (int i = 0; i < image.rows; ++i) {
-    // Get pointer to the start of the current row
         cv::Vec3b* ptr = image.ptr<cv::Vec3b>(i);
         for (int j = 0; j < image.cols; ++j) {
-            // Access the pixel data
             uchar blue = ptr[j][0];
             uchar green = ptr[j][1];
             uchar red = ptr[j][2];
             
             if (blue <= pixel_lenience && green <= pixel_lenience && red <= pixel_lenience)
             {
-                // If all pixels are under the pixel lenience then the shape is an acceptable form of whtie
                 mask.push_back({i, j});
             }
         }
     }
+}
+/* ----------------------------
+*
+*   GENERAL TOOLS
+*
+* ----------------------------- */
 
 
-    // For creating masks, pixels that are white will be discredited as background parts.
-    // do this last
+/*
+Searches a mask 2D vector to see if a point is contained, if not then returns -1
+else returns the index.
+*/
+int search_vec(Point subject, std::vector<std::vector<int>> mask)
+{
+    for (int i = 0; i < size(mask); i++)
+    {
+        if (subject.x == mask[i][0] && subject.y == mask[i][1]) {
+            return i;
+        }
+    }
 
-
+    return -1;
 }
 
+/*
+* Returns the Euclidean Distance between two point structs
+*/
+float euclidDist(Point p1, Point p2)
+{
+    return std::sqrt(std::pow(p2.x-p1.x, 2) + std::pow(p2.y - p1.y, 2));   
+}
+
+
+
+/* ----------------------------
+*
+*   SHAPE OPERATIONS
+*   
+* ---------------------------- */
 void rotate_shape(shape_t &baseShape, float angle)
 {
     Point rotAxis;
@@ -76,7 +102,7 @@ void rotate_shape(shape_t &baseShape, float angle)
 
     return baseShape;
 }
-void scale_shape(shape_t baseShape, float scaleX, float scaleY, bool lockedScaling = false)
+void scale_shape(shape_t &baseShape, float scaleX, float scaleY, bool lockedScaling = false)
 {
     // Define the new bounding box
     int newWidth = baseShape.width * scaleX;
@@ -127,10 +153,6 @@ std::vector<std::vector<int>> upsample_2d(std::vector<std::vector<int>> mask, fl
 
 std::vector<std::vector<int>> downsample_2d(std::vector<std::vector<int>> mask, float scaleX, float scaleY)
 {
-    // Dont know how downsampling works but im assuming i just scale down the coordinate and check if it is in my mask.
-    // if it is in my mask I just remove the value, if it isnt then 
-
-
     for (int i = 0; i<size(mask); i++)
     {
         Point newPoint;
@@ -166,7 +188,7 @@ int search_vec(Point subject, std::vector<std::vector<int>> mask)
     return -1;
 }
 
-void change_colour(shape_t baseShape, float scale_R, float scale_G, float scale_B)
+void change_colour(shape_t &baseShape, float scale_R, float scale_G, float scale_B)
 {
     Colour newColour;
     newColour.red = std::min(255, baseShape.colour.red * scale_R);
@@ -178,7 +200,7 @@ void change_colour(shape_t baseShape, float scale_R, float scale_G, float scale_
     return baseShape;
 }
 
-void change_opacity(shape_t baseShape, float scale)
+void change_opacity(shape_t &baseShape, float scale)
 {
     Colour newColour = baseShape.colour;
     newColour.opacity *= scale;
@@ -189,7 +211,7 @@ void change_opacity(shape_t baseShape, float scale)
     return baseShape;
 }
 
-void shift_position(shape_t baseShape, float movePercentage_x, float movePercentage_y)
+void shift_position(shape_t &baseShape, float movePercentage_x, float movePercentage_y)
 {
     int pixels_moved_x = movePercentage_x * IMG_WIDTH;
     int pixels_moved_y = movePercentage_y * IMG_HEIGHT;
@@ -203,9 +225,6 @@ void shift_position(shape_t baseShape, float movePercentage_x, float movePercent
     return baseShape;
 
 }
-float euclidDist(Point p1, Point p2)
-{
-    return std::sqrt(std::pow(p2.x-p1.x, 2) + std::pow(p2.y - p1.y, 2));   
-}
+
 
 

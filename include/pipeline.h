@@ -5,19 +5,35 @@
 #include <vector>
 #include "params.h"
 
+
 /*
 *   Create a black canvas object, this is only run once per execution
 */
 std::vector<std::vector<Colour>> createCanvas(int width = IMG_WIDTH, int height = IMG_HEIGHT);
 
 /*
-* Find the best shape across n Generations
+* # find_best_shape()
+* ## Description
+* - Finds the best shape that fits the allocated canvas within a defined number of generations
+* ## Inputs
+* - `vector<vector<Colour> canvas` -> The current canvas state.
+* - `int num_generations` -> The number of generations that is taken to optimise the shape
+* - `vector<vector<vector<int>>> all_masks` -> All of the available shape masks, these are defined in shapes/
+* ## Outputs
+* - `shape_t : best_shape` -> the shape that has performed the best in terms of similarity to the canvas
 */
-void find_best_shape(int num_generations = NUM_GENERATIONS);
+shape_t find_best_shape(std::vector<std::vector<Colour>> canvas, std::vector<std::vector<std::vector<int>>> all_masks, int num_generations = NUM_GENERATIONS);
 
 
 /*
-* Draw all the shapes on to the canvas
+* # draw_shapes()
+* ## Description
+* - Finds the a number `n` best shapes and draws all of those shapes to the canvas
+* ## Inputs
+* - `vector<vector<Colour>> canvas` -> The current state of the canvas
+* - `int num_shapes` -> The number of shapes that will be drawn to the canvas
+* ## Outputs
+* - `bool` -> Returns True if the canvas has drawn successfully otherwise returns False
 */
-void draw_shapes(int num_shapes = NUM_SHAPES);
+bool draw_shapes(std::vector<std::vector<Colour>> canvas, std::vector<std::vector<std::vector<int>>> all_masks, int num_shapes = NUM_SHAPES);
 
