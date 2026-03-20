@@ -2,7 +2,7 @@
 
 Geometrise is a geometric image approximation tool that reconstructs images using procedurally generated and evolved shapes. It uses a genetic algorithm to iteratively place shapes that best approximate a target image, starting with large coarse shapes and progressively refining with smaller detailed ones.
 
-This is a second time I've undertaken this project, with the first time being in Python and objectively bad.
+This is a second time I've undertaken this project, with the first time being in Python and objectively worse than this one. This version has custom shapes, better obtimisation, better accuracy better everything honestly.I havent added officialy inclusion for the custom shapes integrated into the GUI but you can modify the source code if you want to try it out yourself, just install the dependancies.
 
 <img width="271" height="182" alt="image" src="https://github.com/user-attachments/assets/8ec093bc-feb5-4e90-a627-055813eb8e5f" />
 
