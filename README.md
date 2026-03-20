@@ -20,7 +20,8 @@ Geometrise uses an evolutionary approach to image reconstruction:
 
 The algorithm uses a coarse-to-fine strategy — early shapes are found at a lower resolution for speed, with resolution increasing as more detail is needed.
 
-![013dbbd6bf873ec243e5aa98293fb034](https://github.com/user-attachments/assets/9ece5b86-294a-4001-a1d1-8eae2bf66a32)
+![2026-03-20 19-22-44](https://github.com/user-attachments/assets/fb0f242b-5d47-45ac-bc6c-995a146e83b7)
+
 
 
 ---
