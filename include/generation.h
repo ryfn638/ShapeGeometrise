@@ -15,7 +15,11 @@
 * ### Outputs:
 * - None -> The canvas is modified through the & key
 */
+<<<<<<< HEAD
 void project_canvas(std::vector<std::vector<Colour>> &canvas, shape_t shape);
+=======
+void project_canvas(std::vector<Colour> &canvas, const shape_t& shape);
+>>>>>>> ff2dc14 (Finished Base Model)
 
 /*
 # createGeneration()
@@ -31,6 +35,16 @@ void project_canvas(std::vector<std::vector<Colour>> &canvas, shape_t shape);
 * - shape_t: bestShape -> The shape that has performed the best in the generation in terms of canvas score
 */
 shape_t createGeneration(
+<<<<<<< HEAD
     shape_t const &bestShape,
     std::vector<std::vector<Colour>> const canvas,
     std::vector<std::vector<std::vector<int>>> const all_masks);
+=======
+    const shape_t& bestShape,
+    const std::vector<Colour>& canvas,
+    const std::vector<std::vector<ShapePoint>>& all_masks,
+    const std::vector<Colour>& target,
+    const int generation_number,
+    const int desample_rate
+);
+>>>>>>> ff2dc14 (Finished Base Model)
