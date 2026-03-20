@@ -176,7 +176,7 @@ shape_t createShape(shape_t* baseShape,
     }
     else {
         std::uniform_real_distribution<float> dis(0.8f, 1.2f);
-        std::uniform_real_distribution<float> disAngle(0.0f, 6.28f);
+        std::uniform_real_distribution<float> disAngle(0.0f, 2.);
         std::uniform_real_distribution<float> disShift(-0.1f, 0.1f);
         newShape = *baseShape;
         scale_shape(newShape, dis(gen), dis(gen), false);
