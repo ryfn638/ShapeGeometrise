@@ -20,5 +20,10 @@ void updateCanvasTexture(const std::vector<Colour>& canvas, int w, int h);  // d
 
 void Frame::visualise_canvas(const std::vector<Colour>& canvas, int displayW, int displayH)
 {
-    updateCanvasTexture(canvas, displayW, displayH);
+    std::lock_guard<std::mutex> lock(canvasMutex);
+    pendingCanvas = canvas;
+    pendingW = displayW;
+    pendingH = displayH;
+    canvasDirty = true;
+
 }

@@ -249,6 +249,13 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
         g_pd3dDeviceContext->OMSetRenderTargets(1, &g_mainRenderTargetView, nullptr);
         g_pd3dDeviceContext->ClearRenderTargetView(g_mainRenderTargetView,
             (float*)&clearColor);
+
+        if (canvasDirty) {
+            std::lock_guard<std::mutex> lock(canvasMutex);
+            updateCanvasTexture(pendingCanvas, pendingW, pendingH);
+            canvasDirty = false;
+        }
+
         ImGui::Render();
         ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
         g_pSwapChain->Present(1, 0);

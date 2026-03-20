@@ -210,7 +210,6 @@ shape_t createGeneration(
 
     std::vector<shape_t> generation(GENERATION_SHAPES);
 
-    #pragma omp parallel for
     for (int i = 0; i < GENERATION_SHAPES; i++) {
         int local_mask_idx = (i * (int)all_masks.size()) / GENERATION_SHAPES;
 
@@ -222,7 +221,6 @@ shape_t createGeneration(
         int improvement = calculateImprovement(canvas, target, generation[i], desample_rate);
 
         //std::cout << improvement << std::endl;
-           #pragma omp critical
         {
             if (improvement > max_improvement) {
                 max_improvement = improvement;

@@ -15,6 +15,10 @@
 #include <opencv2/imgproc.hpp>
 using namespace std;
 
+std::vector<Colour> pendingCanvas;
+std::atomic<bool> canvasDirty(false);
+std::mutex canvasMutex;
+int pendingW = 0, pendingH = 0;
 /*
 This folder contains general pipeline functinos that may not already exist in other functions, this includes a general function for finding the best shape and drawing it on to the canvas
 */
@@ -94,9 +98,9 @@ bool draw_shapes(
     struct Stage { float progress, scale; int subsample; };
     std::vector<Stage> stages = {
         { 0.0f, 0.25f, 8 },
-        { 0.3f, 0.5f,  4 },
-        { 0.6f, 0.75f, 2 },
-        { 0.8f, 1.0f,  1 },
+        { 0.75f, 0.5f,  4 },
+        { 0.85f, 0.75f, 2 },
+        { 0.9f, 1.0f,  1 },
     };
 
     for (int s = 0; s < num_shapes; s++)
