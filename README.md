@@ -33,7 +33,6 @@ The algorithm uses a coarse-to-fine strategy — early shapes are found at a low
 - Real time canvas preview via ImGui
 - Support for custom shape masks
 - Adjustable parameters via UI sliders
-- Multi-threaded shape generation with OpenMP
 
 ---
 
