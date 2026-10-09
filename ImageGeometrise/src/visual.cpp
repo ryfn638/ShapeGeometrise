@@ -17,12 +17,11 @@ Dump all the OpenGL code here when I can be bothered to learn it
 */
 
 
-void Frame::visualise_canvas(const std::vector<Colour>& canvas, int displayW, int displayH)
+void Frame::VisualiseCanvas(const std::vector<Colour>& canvas, int displayW, int displayH)
 {
     std::lock_guard<std::mutex> lock(canvasMutex);
     pendingCanvas = canvas;
     pendingW = displayW;
     pendingH = displayH;
     canvasDirty = true;
-
 }

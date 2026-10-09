@@ -155,7 +155,7 @@ bool draw_shapes(
         IMG_HEIGHT = ORIG_HEIGHT;
 
         project_canvas(displayCanvas, displayShape);
-        viewFrame.visualise_canvas(displayCanvas, ORIG_WIDTH, ORIG_HEIGHT);
+        viewFrame.VisualiseCanvas(displayCanvas, ORIG_WIDTH, ORIG_HEIGHT);
 
         IMG_WIDTH = savedW;
         IMG_HEIGHT = savedH;

@@ -11,5 +11,5 @@ class Frame
 {
     public:
         std::vector<shape_t> all_shapes;
-        void visualise_canvas(const std::vector<Colour>& canvas, int displayW, int displayH);
+        void VisualiseCanvas(const std::vector<Colour>& canvas, int displayW, int displayH);
 };
