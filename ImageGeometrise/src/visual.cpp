@@ -1,0 +1,28 @@
+#include <iostream>
+#include <vector>
+#include "include/arena.h"
+#include <random>
+
+#include "include/params.h"
+#include "include/operations.h"
+#include "include/generation.h"
+#include "include/draw.h"
+#include <opencv2/core.hpp>
+#include <opencv2/highgui.hpp>
+using namespace std;
+
+
+/*
+Dump all the OpenGL code here when I can be bothered to learn it
+*/
+
+
+void Frame::visualise_canvas(const std::vector<Colour>& canvas, int displayW, int displayH)
+{
+    std::lock_guard<std::mutex> lock(canvasMutex);
+    pendingCanvas = canvas;
+    pendingW = displayW;
+    pendingH = displayH;
+    canvasDirty = true;
+
+}
