@@ -3,11 +3,9 @@
 
 #include "igCanvasRenderer.h"
 #include "igWindow.h"
+#include "igGeneration.h"
 #include "imgui.h"
-#include "operations.h" // Colour, ShapePoint
-#include <atomic>
 #include <string>
-#include <vector>
 
 // The ImGui front end: controls on the left, the canvas on the right.
 // Also owns the generation that the Generate button kicks off.
@@ -26,18 +24,12 @@ public:
 private:
   void DrawControls();
   void DrawCanvas();
-  void StartGeneration();
 
   igWindow* m_pWindow;
   igCanvasRenderer* m_pRenderer;
   ImGuiContext* m_pCtx;
 
   std::string m_selectedFilepath;
-  std::atomic<bool> m_generating = false;
-
-  std::vector<std::vector<ShapePoint>> m_masks;
-  std::vector<Colour> m_canvas;
-  int m_imageWidth = 0;
-  int m_imageHeight = 0;
+  igGeneration m_generation;
 };
 #endif

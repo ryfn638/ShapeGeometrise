@@ -122,21 +122,52 @@ void igCanvasRenderer::EndFrame()
   m_pSwapChain->Present(1, 0); // vsync
 }
 
-void igCanvasRenderer::UpdateCanvasTexture(const std::vector<Colour>& canvas, int width, int height)
+void igCanvasRenderer::ResetCanvas(const igVec2& size)
 {
-  if (!m_pd3dDevice)
+  std::lock_guard<std::mutex> lock(m_canvasMutex);
+  m_canvas = igCanvas(size);
+  m_canvasDirty = true;
+}
+
+void igCanvasRenderer::ProjectShape(const igShape& shape)
+{
+  std::lock_guard<std::mutex> lock(m_canvasMutex);
+  m_canvas.Project(shape);
+  m_canvasDirty = true;
+}
+
+igVec2 igCanvasRenderer::CanvasSize() const
+{
+  std::lock_guard<std::mutex> lock(m_canvasMutex);
+  return m_canvas.Size();
+}
+
+void igCanvasRenderer::UpdateCanvas()
+{
+  if (!m_pd3dDevice || !m_canvasDirty)
+  {
+    return;
+  }
+
+  std::lock_guard<std::mutex> lock(m_canvasMutex);
+  m_canvasDirty = false;
+
+  const int64_t width = m_canvas.Size().x;
+  const int64_t height = m_canvas.Size().y;
+  if (m_canvas.Empty())
   {
     return;
   }
 
   // Create the texture once per size, then just update it
-  if (!m_canvasTex2D || width != m_canvasWidth || height != m_canvasHeight)
+  if (!m_canvasTex2D || m_canvas.Size() != m_textureSize)
   {
     CleanupCanvasTexture();
 
     D3D11_TEXTURE2D_DESC desc = {};
-    desc.Width = width;
-    desc.Height = height;
+
+    desc.Width = UINT(width);
+    desc.Height = UINT(height);
     desc.MipLevels = 1;
     desc.ArraySize = 1;
     desc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
@@ -147,8 +178,7 @@ void igCanvasRenderer::UpdateCanvasTexture(const std::vector<Colour>& canvas, in
 
     m_pd3dDevice->CreateTexture2D(&desc, nullptr, &m_canvasTex2D);
     m_pd3dDevice->CreateShaderResourceView(m_canvasTex2D, nullptr, &m_canvasTexture);
-    m_canvasWidth = width;
-    m_canvasHeight = height;
+    m_textureSize = m_canvas.Size();
   }
 
   // Map the texture and write pixels directly without recreating
@@ -159,12 +189,12 @@ void igCanvasRenderer::UpdateCanvasTexture(const std::vector<Colour>& canvas, in
   }
 
   uint8_t* dst = (uint8_t*)mapped.pData;
-  for (int y = 0; y < height; y++)
+  for (int64_t y = 0; y < height; y++)
   {
     uint8_t* row = dst + y * mapped.RowPitch;
-    for (int x = 0; x < width; x++)
+    for (int64_t x = 0; x < width; x++)
     {
-      const Colour& c = canvas[y * width + x];
+      const igColour c = m_canvas.GetPixel(x, y);
       row[x * 4 + 0] = c.red;
       row[x * 4 + 1] = c.green;
       row[x * 4 + 2] = c.blue;

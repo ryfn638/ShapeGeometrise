@@ -1,10 +1,12 @@
 #ifndef igCanvasRenderer_h
 #define igCanvasRenderer_h
 
+#include "igCanvas.h"
 #include "igWindow.h"
-#include "operations.h" // Colour
+#include "igShape.h"
 #include <d3d11.h>
-#include <vector>
+#include <atomic>
+#include <mutex>
 
 // Owns the D3D11 device/swap chain for a window, plus the texture the canvas is drawn into
 class igCanvasRenderer
@@ -28,8 +30,14 @@ public:
   void BeginFrame(float r, float g, float b);
   void EndFrame();
 
-  // Uploads the canvas pixels, (re)creating the texture if the size changed
-  void UpdateCanvasTexture(const std::vector<Colour>& canvas, int width, int height);
+  // The canvas that's shown. Only one exists: shapes are projected onto it as they're found.
+  // ResetCanvas/ProjectShape can be called from the generation thread.
+  void ResetCanvas(const igVec2& size);
+  void ProjectShape(const igShape& shape);
+  igVec2 CanvasSize() const;
+
+  // UI thread, once a frame: uploads the canvas to the texture if it changed
+  void UpdateCanvas();
   ID3D11ShaderResourceView* CanvasTexture() const
   {
     return m_canvasTexture;
@@ -61,8 +69,12 @@ private:
 
   ID3D11ShaderResourceView* m_canvasTexture = nullptr;
   ID3D11Texture2D* m_canvasTex2D = nullptr;
-  int m_canvasWidth = 0;
-  int m_canvasHeight = 0;
+
+  igVec2 m_textureSize;
+
+  igCanvas m_canvas;
+  mutable std::mutex m_canvasMutex;
+  std::atomic<bool> m_canvasDirty = false;
 };
 
 #endif
