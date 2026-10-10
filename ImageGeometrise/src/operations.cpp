@@ -62,32 +62,6 @@ void change_opacity(shape_t& baseShape, float scale)
     baseShape.colour.opacity = uint8_t(std::min(255, int(baseShape.colour.opacity * scale)));
 }
 
-void create_mask(std::vector<ShapePoint>& mask, string filepath, double background_lenience) {
-    cv::Mat image = cv::imread(filepath, cv::IMREAD_UNCHANGED);
-
-    if (image.empty()) {
-        std::cerr << "Error loading image" << std::endl;
-        return;
-    }
-
-    // normalise to unit size so scale_shape works correctly
-    cv::resize(image, image, cv::Size(100, 100));
-
-    int pixel_lenience = 255 * background_lenience;
-
-    for (int i = 0; i < image.rows; ++i) {
-        Vec3b* ptr = image.ptr<Vec3b>(i);
-        for (int j = 0; j < image.cols; ++j) {
-            uchar blue = ptr[j][0];
-            uchar green = ptr[j][1];
-            uchar red = ptr[j][2];
-
-            if (blue <= pixel_lenience && green <= pixel_lenience && red <= pixel_lenience)
-                mask.push_back({ (int16_t)i, (int16_t)j });
-        }
-    }
-}
-
 std::vector<Colour> loadTarget(const std::string& path) {
     cv::Mat img = cv::imread(path);
     cv::resize(img, img, cv::Size(IMG_WIDTH, IMG_HEIGHT));

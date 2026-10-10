@@ -1,0 +1,34 @@
+# Mirrors .editorconfig, plus the bits VS's own formatter can't do:
+# constructor initialisers and short function bodies always go on their own lines.
+# VS uses this automatically (Tools > Options > Text Editor > C/C++ > Code Style > Formatting).
+BasedOnStyle: Microsoft
+Language: Cpp
+
+IndentWidth: 2
+TabWidth: 2
+UseTab: Never
+ColumnLimit: 0
+AccessModifierOffset: -2
+NamespaceIndentation: All
+IndentCaseLabels: false
+IndentPPDirectives: None
+PointerAlignment: Left
+AlignAfterOpenBracket: Align
+SortIncludes: Never
+
+BreakBeforeBraces: Allman
+
+# Constructor initialisers on their own lines, one per line
+BreakConstructorInitializers: BeforeColon
+PackConstructorInitializers: Never
+ConstructorInitializerIndentWidth: 2
+
+# No one-line bodies (empty {} is still allowed)
+AllowShortFunctionsOnASingleLine: None
+AllowShortBlocksOnASingleLine: Never
+AllowShortIfStatementsOnASingleLine: Never
+AllowShortLoopsOnASingleLine: false
+AllowShortCaseLabelsOnASingleLine: false
+
+SpaceBeforeParens: ControlStatements
+Cpp11BracedListStyle: false
