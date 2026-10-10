@@ -11,17 +11,15 @@
 #include <opencv2/highgui.hpp>
 using namespace std;
 
-
 /*
 Dump all the OpenGL code here when I can be bothered to learn it
 */
 
-
 void Frame::VisualiseCanvas(const std::vector<Colour>& canvas, int displayW, int displayH)
 {
-    std::lock_guard<std::mutex> lock(canvasMutex);
-    pendingCanvas = canvas;
-    pendingW = displayW;
-    pendingH = displayH;
-    canvasDirty = true;
+  std::lock_guard<std::mutex> lock(canvasMutex);
+  pendingCanvas = canvas;
+  pendingW = displayW;
+  pendingH = displayH;
+  canvasDirty = true;
 }

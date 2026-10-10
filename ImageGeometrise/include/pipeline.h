@@ -7,7 +7,6 @@
 #include "arena.h"
 #include "operations.h"
 
-
 extern std::atomic<int> currentShape;
 
 std::vector<Colour> createCanvas(int width = IMG_WIDTH, int height = IMG_HEIGHT);
@@ -26,26 +25,22 @@ std::vector<Colour> createCanvas(int width = IMG_WIDTH, int height = IMG_HEIGHT)
 */
 shape_t find_best_shape(std::vector<std::vector<Colour>> canvas, std::vector<std::vector<std::vector<int>>> all_masks, int num_generations = NUM_GENERATIONS);
 
-
 std::vector<Colour> resizeCanvas(const std::vector<Colour>& canvas,
-    int newW,
-    int newH);
-
-
+                                 int newW,
+                                 int newH);
 
 /*
-* # draw_shapes()
-* ## Description
-* - Finds the a number `n` best shapes and draws all of those shapes to the canvas
-* ## Inputs
-* - `int num_shapes` -> The number of shapes that will be drawn to the canvas
-* ## Outputs
-* - `bool` -> Returns True if the canvas has drawn successfully otherwise returns False
-*/
+ * # draw_shapes()
+ * ## Description
+ * - Finds the a number `n` best shapes and draws all of those shapes to the canvas
+ * ## Inputs
+ * - `int num_shapes` -> The number of shapes that will be drawn to the canvas
+ * ## Outputs
+ * - `bool` -> Returns True if the canvas has drawn successfully otherwise returns False
+ */
 
 bool draw_shapes(
     const std::vector<Colour>& canvas,
     const std::vector<std::vector<ShapePoint>>& all_masks,
     const std::string& filepath,
     int num_shapes = NUM_SHAPES);
-

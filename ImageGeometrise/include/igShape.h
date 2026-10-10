@@ -16,7 +16,7 @@
 class igShape
 {
 public:
-  igShape(const igVec2 dimensions, const igVec2 position, float angle, float scale, igMask *pMask);
+  igShape(const igVec2 dimensions, const igVec2 position, float angle, float scale, igMask* pMask);
 
   igVec2 Size();
   igVec2 Position();
@@ -25,6 +25,7 @@ public:
   void Scale(float scale);
 
   void ChangeColour(float x, float y, float z);
+
 private:
   igVec2 m_dimensions;
   igVec2 m_position;

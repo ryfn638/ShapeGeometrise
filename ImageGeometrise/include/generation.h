@@ -21,7 +21,7 @@ extern int pendingW, pendingH;
 * ### Outputs:
 * - None -> The canvas is modified through the & key
 */
-void project_canvas(std::vector<Colour> &canvas, const shape_t& shape);
+void project_canvas(std::vector<Colour>& canvas, const shape_t& shape);
 
 /*
 # createGeneration()
@@ -42,5 +42,4 @@ shape_t createGeneration(
     const std::vector<std::vector<ShapePoint>>& all_masks,
     const std::vector<Colour>& target,
     const int generation_number,
-    const int desample_rate
-);
+    const int desample_rate);

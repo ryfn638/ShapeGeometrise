@@ -17,7 +17,10 @@ public:
   igCanvasRenderer& operator=(const igCanvasRenderer&) = delete;
 
   // False if the device couldn't be created
-  bool IsValid() const { return m_pd3dDevice != nullptr; }
+  bool IsValid() const
+  {
+    return m_pd3dDevice != nullptr;
+  }
 
   void Resize(UINT width, UINT height);
 
@@ -27,10 +30,19 @@ public:
 
   // Uploads the canvas pixels, (re)creating the texture if the size changed
   void UpdateCanvasTexture(const std::vector<Colour>& canvas, int width, int height);
-  ID3D11ShaderResourceView* CanvasTexture() const { return m_canvasTexture; }
+  ID3D11ShaderResourceView* CanvasTexture() const
+  {
+    return m_canvasTexture;
+  }
 
-  ID3D11Device* Device() const { return m_pd3dDevice; }
-  ID3D11DeviceContext* Context() const { return m_pd3dDeviceContext; }
+  ID3D11Device* Device() const
+  {
+    return m_pd3dDevice;
+  }
+  ID3D11DeviceContext* Context() const
+  {
+    return m_pd3dDeviceContext;
+  }
 
 private:
   bool CreateDeviceD3D();

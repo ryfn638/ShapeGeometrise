@@ -26,7 +26,10 @@ public:
   // Native file picker. Returns "" if cancelled.
   std::string OpenFileDialog(const char* filter) const;
 
-  HWND Handle() const { return m_handle; }
+  HWND Handle() const
+  {
+    return m_handle;
+  }
 
 private:
   static LRESULT WINAPI WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);

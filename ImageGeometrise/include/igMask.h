@@ -11,7 +11,7 @@
 // Small wrapper for what is essentially a bitmap
 class igMask
 {
-  igMask(const std::string &filePath, double backgroundLenience);
+  igMask(const std::string& filePath, double backgroundLenience);
 
 private:
   std::vector<igVec2> m_data;

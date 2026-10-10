@@ -11,7 +11,8 @@
 static const char* IMAGE_FILTER = "Image Files\0*.jpg;*.jpeg;*.png;*.bmp\0All Files\0*.*\0";
 
 igWindowUI::igWindowUI(igWindow* pWindow, igCanvasRenderer* pRenderer)
-  : m_pWindow(pWindow), m_pRenderer(pRenderer)
+  : m_pWindow(pWindow),
+    m_pRenderer(pRenderer)
 {
   IMGUI_CHECKVERSION();
   m_pCtx = ImGui::CreateContext();
@@ -49,8 +50,8 @@ void igWindowUI::Render()
   ImGui::SetNextWindowSize(ImGui::GetIO().DisplaySize);
   ImGui::Begin("Geometrise", nullptr,
                ImGuiWindowFlags_NoTitleBar |
-               ImGuiWindowFlags_NoResize |
-               ImGuiWindowFlags_NoMove);
+                   ImGuiWindowFlags_NoResize |
+                   ImGuiWindowFlags_NoMove);
 
   DrawControls();
   ImGui::SameLine();
@@ -158,8 +159,9 @@ void igWindowUI::StartGeneration()
   m_generating = true;
 
   // Detached: draw_shapes can't be cancelled, so closing mid-generation just exits the process
-  std::thread([this]() {
+  std::thread([this]()
+              {
     draw_shapes(m_canvas, m_masks, m_selectedFilepath, NUM_SHAPES);
-    m_generating = false;
-  }).detach();
+    m_generating = false; })
+      .detach();
 }

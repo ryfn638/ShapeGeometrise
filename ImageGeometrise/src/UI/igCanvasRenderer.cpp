@@ -34,7 +34,8 @@ bool igCanvasRenderer::CreateDeviceD3D()
 
   D3D_FEATURE_LEVEL featureLevel;
   const D3D_FEATURE_LEVEL featureLevelArray[2] = {
-    D3D_FEATURE_LEVEL_11_0, D3D_FEATURE_LEVEL_10_0 };
+    D3D_FEATURE_LEVEL_11_0, D3D_FEATURE_LEVEL_10_0
+  };
 
   if (D3D11CreateDeviceAndSwapChain(nullptr, D3D_DRIVER_TYPE_HARDWARE, nullptr, 0,
                                     featureLevelArray, 2, D3D11_SDK_VERSION,
@@ -140,7 +141,7 @@ void igCanvasRenderer::UpdateCanvasTexture(const std::vector<Colour>& canvas, in
     desc.ArraySize = 1;
     desc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
     desc.SampleDesc.Count = 1;
-    desc.Usage = D3D11_USAGE_DYNAMIC;            // dynamic for frequent updates
+    desc.Usage = D3D11_USAGE_DYNAMIC; // dynamic for frequent updates
     desc.BindFlags = D3D11_BIND_SHADER_RESOURCE;
     desc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE; // allow CPU writes
 
