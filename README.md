@@ -8,27 +8,6 @@ Custom shapes still aren't hooked up in the GUI, but if you want to try them you
 
 <img width="271" height="182" alt="image" src="https://github.com/user-attachments/assets/8ec093bc-feb5-4e90-a627-055813eb8e5f" />
 
-## How it works
-
-For every shape that gets placed:
-
-1. Make a generation of random shapes, each coloured with the average colour of the target underneath it
-2. Score each one by how much closer it would get the canvas to the target (colour distance is done in LAB, so it's closer to how your eyes see it)
-3. Take the best one and mutate it (scale, move, rotate, opacity) to make the next generation
-4. After the last generation, draw the winner onto the canvas
-
-It also does coarse to fine. The first 75% of shapes are found at quarter resolution because the big shapes don't need detail, then it steps up through half and three quarters to full resolution for the last 10%.
-
-![2026-03-20 19-22-44](https://github.com/user-attachments/assets/fb0f242b-5d47-45ac-bc6c-995a146e83b7)
-
-## CPU vs GPU
-
-Scoring shapes was about 90% of the run time, so that's what got moved to CUDA. Each generation gets graded in one kernel launch, with one row of blocks per candidate shape, and each thread handles some of that shape's pixels. The average colour for each candidate is worked out on the GPU too, right before grading.
-
-The CPU version is still there and you can switch between them with the "Use GPU (CUDA)" checkbox. On my 5070, colouring and grading 100 candidates at 780x520 took around 950ms on the CPU and under 1ms on the GPU. The scores aren't bit for bit identical (the GPU rounds `powf` slightly differently), but they're within a tiny fraction of a percent and pick the same shapes.
-
-If you tick "Diagnostics" you get a window with graphs of how long each shape took, split into grading, creating candidates and everything else, plus which one it ran on. On the GPU the colour averaging counts as grading time, since it happens in the same step.
-
 ## UI
 
 <img width="1255" height="771" alt="image" align="center" src="https://github.com/user-attachments/assets/8f7a204b-9d9e-4cd2-a1fb-37ba6f2fa456" />
