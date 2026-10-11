@@ -20,6 +20,10 @@ public:
   igVec2 Position() const;
   float Angle() const;
   igColour Colour() const;
+  const igMask* Mask() const
+  {
+    return m_pMask;
+  }
 
   void SetPosition(const igVec2& position);
   void SetColour(const igColour& colour);

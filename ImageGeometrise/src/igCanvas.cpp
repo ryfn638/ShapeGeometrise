@@ -94,5 +94,6 @@ igCanvas igCanvas::Resized(const igVec2& size) const
       newCanvas.SetPixel(x, y, igColour(row[x][2], row[x][1], row[x][0]));
     }
   }
+
   return newCanvas;
 }

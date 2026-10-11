@@ -24,6 +24,7 @@ public:
 private:
   void DrawControls();
   void DrawCanvas();
+  void DrawDiagnostics();
 
   igWindow* m_pWindow;
   igCanvasRenderer* m_pRenderer;
@@ -31,5 +32,6 @@ private:
 
   std::string m_selectedFilepath;
   igGeneration m_generation;
+  bool m_showDiagnostics = false;
 };
 #endif

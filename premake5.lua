@@ -44,7 +44,7 @@
 --
 -- Source files are globbed, so re-run createproject.bat after adding or removing files.
 
-local SOURCES = { "h", "hpp", "inl", "c", "cpp" }
+local SOURCES = { "h", "hpp", "inl", "c", "cpp", "cuh", "cu" }
 local SKIP_DIRS = { "sub", "build", "tests", "test", "packages" }
 
 local function Warn(msg)
@@ -144,7 +144,7 @@ local function HeaderDirs(dir, files)
   for _, file in ipairs(files) do
     local ext = path.getextension(file)
     local folder = path.getdirectory(file)
-    if (ext == ".h" or ext == ".hpp") and not seen[folder] then
+    if (ext == ".h" or ext == ".hpp" or ext == ".cuh") and not seen[folder] then
       seen[folder] = true
       table.insert(all, folder)
       local rel = "/" .. path.getrelative(dir, folder) .. "/"

@@ -12,12 +12,9 @@ int64_t igCanvasGrader::Grade(const igShape& shape, int subsample) const
   int64_t improvement = 0;
   int64_t i = 0;
 
-  shape.ForEachPixel([&](int64_t x, int64_t y)
-                     {
+  shape.ForEachPixel([&](int64_t x, int64_t y) {
     if (i++ % subsample != 0 || !m_pCanvas->Contains(x, y))
-    {
       return;
-    }
 
     const igColour current = m_pCanvas->GetPixel(x, y);
     const igColour target = m_pTarget->GetPixel(x, y);

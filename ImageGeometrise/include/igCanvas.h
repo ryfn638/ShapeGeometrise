@@ -25,6 +25,12 @@ public:
   igColour GetPixel(int64_t x, int64_t y) const;
   void SetPixel(int64_t x, int64_t y, const igColour& colour);
 
+  // Raw row major pixels (for uploading to the GPU)
+  const igColour* Data() const
+  {
+    return m_data.data();
+  }
+
   // Blends the shape onto the canvas. Anything outside the canvas is skipped.
   void Project(const igShape& shape);
 

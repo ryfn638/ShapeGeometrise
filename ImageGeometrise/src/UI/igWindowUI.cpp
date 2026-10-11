@@ -1,6 +1,8 @@
 #include "igWindowUI.h"
 #include "imgui_impl_dx11.h"
 #include "imgui_impl_win32.h"
+#include <algorithm>
+#include <vector>
 
 static const char* IMAGE_FILTER = "Image Files\0*.jpg;*.jpeg;*.png;*.bmp\0All Files\0*.*\0";
 
@@ -44,13 +46,19 @@ void igWindowUI::Render()
   ImGui::Begin("Geometrise", nullptr,
                ImGuiWindowFlags_NoTitleBar |
                    ImGuiWindowFlags_NoResize |
-                   ImGuiWindowFlags_NoMove);
+                   ImGuiWindowFlags_NoMove |
+                   ImGuiWindowFlags_NoBringToFrontOnFocus); // keeps Diagnostics on top
 
   DrawControls();
   ImGui::SameLine();
   DrawCanvas();
 
   ImGui::End();
+
+  if (m_showDiagnostics)
+  {
+    DrawDiagnostics();
+  }
 
   m_pRenderer->BeginFrame(0.1f, 0.1f, 0.1f);
   ImGui::Render();
@@ -84,9 +92,16 @@ void igWindowUI::DrawControls()
   ImGui::Separator();
   ImGui::Text("Parameters");
   igGenerationSettings& settings = m_generation.Settings();
-  ImGui::SliderInt("Shapes", &settings.numShapes, 1, 500);
-  ImGui::SliderInt("Gen Shapes", &settings.generationShapes, 1, 500);
+  ImGui::SliderInt("Shapes", &settings.numShapes, 1, 5000);
+  ImGui::SliderInt("Gen Shapes", &settings.generationShapes, 1, 10000);
   ImGui::SliderInt("Generations", &settings.numGenerations, 1, 10);
+
+  static const bool gpuAvailable = igGenerationBatch::Available();
+  ImGui::BeginDisabled(!gpuAvailable);
+  ImGui::Checkbox("Use GPU (CUDA)", &settings.useGpu);
+  ImGui::EndDisabled();
+  if (!gpuAvailable)
+    ImGui::TextDisabled("No CUDA device found");
 
   ImGui::Separator();
 
@@ -108,6 +123,9 @@ void igWindowUI::DrawControls()
       m_generation.Stop();
     }
   }
+
+  ImGui::Separator();
+  ImGui::Checkbox("Diagnostics", &m_showDiagnostics);
 
   ImGui::EndChild();
 }
@@ -137,4 +155,66 @@ void igWindowUI::DrawCanvas()
   }
 
   ImGui::EndChild();
+}
+
+void igWindowUI::DrawDiagnostics()
+{
+  ImGui::SetNextWindowSize(ImVec2(460, 420), ImGuiCond_FirstUseEver);
+  if (!ImGui::Begin("Diagnostics", &m_showDiagnostics))
+  {
+    ImGui::End();
+    return;
+  }
+
+  const std::vector<igShapeTiming> timings = m_generation.Timings();
+  if (timings.empty())
+  {
+    ImGui::TextDisabled("Run a generation to see timings");
+    ImGui::End();
+    return;
+  }
+
+  std::vector<float> total, create, grade, gradePerCandidate;
+  float sumTotal = 0.0f, sumCreate = 0.0f, sumGrade = 0.0f;
+  int sumCandidates = 0;
+  for (const igShapeTiming& t : timings)
+  {
+    total.push_back(t.totalMs);
+    create.push_back(t.createMs);
+    grade.push_back(t.gradeMs);
+    gradePerCandidate.push_back(t.candidates ? t.gradeMs * 1000.0f / t.candidates : 0.0f);
+    sumTotal += t.totalMs;
+    sumCreate += t.createMs;
+    sumGrade += t.gradeMs;
+    sumCandidates += t.candidates;
+  }
+
+  const float sumOther = (std::max)(0.0f, sumTotal - sumCreate - sumGrade);
+  ImGui::Text("Grading on: %s", timings.back().gpu ? "GPU (CUDA)" : "CPU");
+  ImGui::Text("%d shapes, %.2f s total, %.1f shapes/s", (int)timings.size(), sumTotal / 1000.0f,
+              timings.size() * 1000.0f / (std::max)(sumTotal, 0.001f));
+  ImGui::Text("Avg %.2f ms/shape, %.1f us per graded candidate", sumTotal / timings.size(),
+              sumGrade * 1000.0f / (std::max)(sumCandidates, 1));
+  ImGui::Text("Time split: grade %.0f%%, create %.0f%%, other %.0f%%",
+              100.0f * sumGrade / sumTotal, 100.0f * sumCreate / sumTotal, 100.0f * sumOther / sumTotal);
+
+  ImGui::Separator();
+
+  // One graph per series, x = shape index
+  auto plot = [](const char* label, const std::vector<float>& values, const char* unit)
+  {
+    char overlay[64];
+    snprintf(overlay, sizeof(overlay), "last %.2f %s", values.back(), unit);
+    const float maxValue = *std::max_element(values.begin(), values.end());
+    ImGui::Text("%s", label);
+    ImGui::PlotLines((std::string("##") + label).c_str(), values.data(), (int)values.size(), 0,
+                     overlay, 0.0f, maxValue * 1.1f, ImVec2(-1, 60));
+  };
+
+  plot("Total per shape", total, "ms");
+  plot("Grading per shape", grade, "ms");
+  plot("Creating candidates per shape", create, "ms");
+  plot("Grading per candidate", gradePerCandidate, "us");
+
+  ImGui::End();
 }

@@ -44,5 +44,33 @@ return {
     directx11 = function()
       links { "d3d11", "dxgi" }
     end,
+
+    -- Installed CUDA toolkit (CUDA_PATH is set by the installer).
+    -- VS doesn't compile .cu files from premake on its own, so each one gets an nvcc build step.
+    cuda = function()
+      local root = os.getenv("CUDA_PATH")
+      if root == nil then
+        error("CUDA_PATH isn't set. Install the CUDA toolkit, or drop \"cuda\" from project.lua.", 0)
+      end
+      root = path.normalize(root)
+
+      externalincludedirs { root .. "/include" }
+      libdirs { root .. "/lib/x64" }
+      links { "cudart_static" }
+
+      -- Same include paths as the C++ side. -arch=native builds for the GPU in this machine.
+      local includes = '%{table.implode(table.join(cfg.includedirs, cfg.externalincludedirs), \'-I"\', \'"\', " ")}'
+      local nvcc = '"' .. root .. '/bin/nvcc.exe" -c -std=c++20 -arch=native ' .. includes
+        .. ' -o "%{cfg.objdir}/%{file.basename}.cu.obj" "%{file.abspath}"'
+
+      filter "files:**.cu"
+        buildmessage "nvcc %{file.name}"
+        buildoutputs { "%{cfg.objdir}/%{file.basename}.cu.obj" }
+      filter { "files:**.cu", "configurations:Debug" }
+        buildcommands { nvcc .. " -g -Xcompiler /MDd -D_DEBUG" }
+      filter { "files:**.cu", "configurations:Release" }
+        buildcommands { nvcc .. " -O3 -Xcompiler /MD -DNDEBUG" }
+      filter {}
+    end,
   },
 }
