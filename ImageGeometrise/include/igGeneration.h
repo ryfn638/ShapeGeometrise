@@ -93,6 +93,7 @@ private:
   igCanvas m_target; // full resolution
 
   std::mt19937 m_rng { std::random_device {}() };
+  float m_progress = 0.0f; // 0 to 1 through the run, for CreateShape (worker thread only)
 
   std::thread m_thread;
   std::atomic<bool> m_running = false;

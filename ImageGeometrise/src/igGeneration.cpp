@@ -8,8 +8,18 @@
 #include <chrono>
 #include <climits>
 #include <math.h>
+#include <numeric>
 
 using Clock = std::chrono::steady_clock;
+
+namespace
+{
+  namespace impl
+  {
+    // the top 10 reproduce
+    const int topNSize = 10;
+  }
+}
 
 static float MsSince(Clock::time_point start)
 {
@@ -87,9 +97,9 @@ void igGeneration::Run()
 
   const Stage stages[] = {
     { 0.0f, 0.25f, 8 },
-    { 0.75f, 0.5f, 4 },
-    { 0.85f, 0.75f, 2 },
-    { 0.9f, 1.0f, 1 },
+    { 0.25f, 0.5f, 4 },
+    { 0.55f, 0.75f, 2 },
+    { 0.75f, 1.0f, 1 },
   };
 
   const igVec2 fullSize = m_target.Size();
@@ -107,6 +117,7 @@ void igGeneration::Run()
     const Clock::time_point shapeStart = Clock::now();
     m_currentTiming = igShapeTiming();
     float progress = (float)s / numShapes;
+    m_progress = progress;
 
     Stage currentStage = stages[0];
     for (const Stage& stage : stages)
@@ -158,12 +169,12 @@ void igGeneration::Run()
 
 igShape igGeneration::FindBestShape(const igCanvas& canvas, const igCanvas& target, int subsample)
 {
-  // TODO: Grader for whatever reason works out the average colour, I think this makes more sense it igCanvas was the one to do it
   const igCanvasGrader grader(&target, &canvas);
   const int generationShapes = m_runSettings.generationShapes;
 
   Clock::time_point start = Clock::now();
-  igShape topShape = CreateShape(nullptr, &m_masks[0], target);
+
+  std::vector<igShape> topShapes(impl::topNSize, CreateShape(nullptr, &m_masks[0], target));
   m_currentTiming.createMs += MsSince(start);
 
   std::vector<igShape> candidates;
@@ -175,6 +186,8 @@ igShape igGeneration::FindBestShape(const igCanvas& canvas, const igCanvas& targ
     candidates.clear();
     for (int i = 0; i < generationShapes; i++)
     {
+      auto& topShape = topShapes[i % impl::topNSize];
+
       // Spread the masks evenly over the generation
       const igMask* pMask = &m_masks[(i * m_masks.size()) / generationShapes];
       // On the GPU path the average colour is filled in by the GPU during grading
@@ -203,20 +216,17 @@ igShape igGeneration::FindBestShape(const igCanvas& canvas, const igCanvas& targ
     m_currentTiming.candidates += int(candidates.size());
 
     int64_t maxImprovement = INT64_MIN;
-    size_t bestIndex = 0;
-    for (size_t i = 0; i < candidates.size(); i++)
-    {
-      if (scores[i] > maxImprovement)
-      {
-        maxImprovement = scores[i];
-        bestIndex = i;
-      }
-    }
 
-    if (!candidates.empty())
-      topShape = candidates[bestIndex];
+    std::vector<int> order(candidates.size());
+    std::iota(order.begin(), order.end(), 0);
+
+    std::sort(order.begin(), order.end(), [&](size_t a, size_t b)
+              { return scores[a] > scores[b]; });
+
+    for (size_t i = 0; i < impl::topNSize; i++)
+      topShapes[i] = std::move(candidates[order[i]]);
   }
-  return topShape;
+  return topShapes[0];
 }
 
 igShape igGeneration::CreateShape(const igShape* pBaseShape, const igMask* pMask, const igCanvas& target, bool averageColour)
@@ -226,7 +236,10 @@ igShape igGeneration::CreateShape(const igShape* pBaseShape, const igMask* pMask
 
   if (!pBaseShape)
   {
-    std::uniform_real_distribution<float> disSize(0.02f, 1.0f);
+    // Big shapes early for the broad strokes, small ones later for detail:
+    // the max size goes from the whole longest side down to 10% of it
+    const float maxSize = 1.0f - 0.9f * m_progress;
+    std::uniform_real_distribution<float> disSize(0.02f, maxSize);
     std::uniform_real_distribution<float> disPos(0.0f, 1.0f);
 
     int64_t highestAxis = std::max(canvasSize.x, canvasSize.y);

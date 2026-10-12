@@ -20,7 +20,9 @@ igWindowUI::igWindowUI(igWindow* pWindow, igCanvasRenderer* pRenderer)
   ImGui_ImplWin32_Init(m_pWindow->Handle());
   ImGui_ImplDX11_Init(m_pRenderer->Device(), m_pRenderer->Context());
 
-  m_generation.AddMask("shapes/rectangle.png");
+  //m_generation.AddMask("shapes/rectangle.png");
+  m_generation.AddMask("shapes/circle.png");
+  //m_generation.AddMask("shapes/triangle.png");
 }
 
 igWindowUI::~igWindowUI()
@@ -94,7 +96,7 @@ void igWindowUI::DrawControls()
   igGenerationSettings& settings = m_generation.Settings();
   ImGui::SliderInt("Shapes", &settings.numShapes, 1, 5000);
   ImGui::SliderInt("Gen Shapes", &settings.generationShapes, 1, 10000);
-  ImGui::SliderInt("Generations", &settings.numGenerations, 1, 10);
+  ImGui::SliderInt("Generations", &settings.numGenerations, 1, 50);
 
   static const bool gpuAvailable = igGenerationBatch::Available();
   ImGui::BeginDisabled(!gpuAvailable);
