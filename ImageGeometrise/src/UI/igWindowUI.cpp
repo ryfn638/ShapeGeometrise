@@ -96,7 +96,7 @@ void igWindowUI::DrawControls()
   igGenerationSettings& settings = m_generation.Settings();
   ImGui::SliderInt("Shapes", &settings.numShapes, 1, 5000);
   ImGui::SliderInt("Gen Shapes", &settings.generationShapes, 1, 10000);
-  ImGui::SliderInt("Generations", &settings.numGenerations, 1, 50);
+  ImGui::SliderInt("Generations", &settings.numGenerations, 1, 25);
 
   static const bool gpuAvailable = igGenerationBatch::Available();
   ImGui::BeginDisabled(!gpuAvailable);
