@@ -70,7 +70,7 @@ public:
   static bool Available();
 
   // Once per run. Shapes must use masks from this list.
-  bool SetMasks(const std::vector<igMask>& masks);
+  bool SetMasks(const std::vector<const igMask*>& masks);
   // When the stage (resolution) changes
   bool SetTarget(const igCanvas& target);
   // After every projected shape

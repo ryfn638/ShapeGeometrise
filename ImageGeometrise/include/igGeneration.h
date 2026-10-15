@@ -6,6 +6,7 @@
 #include "igMask.h"
 #include "igShape.h"
 #include <atomic>
+#include <memory>
 #include <mutex>
 #include <random>
 #include <string>
@@ -19,7 +20,7 @@ struct igGenerationSettings
   int numShapes = 300;       // total shapes placed on the canvas
   int generationShapes = 50; // shapes evaluated per generation
   int numGenerations = 2;    // generations per placed shape
-  bool useGpu = false;       // grade with CUDA (igGenerationBatch) instead of igCanvasGrader
+  bool useGpu = true;        // grade with CUDA (igGenerationBatch) instead of igCanvasGrader
 };
 
 // How long one placed shape took, for the diagnostics panel
@@ -49,7 +50,15 @@ public:
     return m_settings;
   }
 
-  void AddMask(const std::string& path, double backgroundLenience = 0.9);
+  // UI thread only. Adding is fine mid-run (it's used from the next run), removing isn't.
+  // False if the image couldn't be loaded. Adding the same file twice does nothing.
+  bool AddMask(std::string&& path, double backgroundLenience = 0.9);
+  bool RemoveMask(size_t index);
+
+  const std::vector<std::unique_ptr<igMask>>& GetMasks() const
+  {
+    return m_masks;
+  }
 
   // Loads the target and starts generating. False if it's already running or the image didn't load.
   bool Start(const std::string& targetPath);
@@ -88,7 +97,10 @@ private:
   igGenerationSettings m_settings;
   igGenerationSettings m_runSettings;
 
-  std::vector<igMask> m_masks;
+  // unique_ptr so a mask never moves when the list grows: shapes hold raw pointers to them
+  std::vector<std::unique_ptr<igMask>> m_masks;
+  // Snapshot taken in Start(). The worker thread only ever looks at this, never m_masks.
+  std::vector<const igMask*> m_runMasks;
   igGenerationBatch m_gpu;
   igCanvas m_target; // full resolution
 

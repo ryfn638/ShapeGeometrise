@@ -4,13 +4,15 @@
 #include <opencv2/imgcodecs.hpp>
 
 igMask::igMask(int64_t width, int64_t height)
-  : m_width(width),
-    m_height(height),
-    m_data(width * height, 1)
+  : m_width(width)
+  , m_height(height)
+  , m_data(width * height, 1)
+  , id("None")
 {
 }
 
-igMask::igMask(const std::string& filepath, double background_lenience)
+igMask::igMask(std::string&& filepath, double background_lenience)
+  :  id(filepath)
 {
   // IMREAD_COLOR so it's always 3 channels; a PNG with alpha would be 4 and break the Vec3b reads
   cv::Mat image = cv::imread(filepath, cv::IMREAD_COLOR);

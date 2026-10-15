@@ -2,9 +2,33 @@
 #include "imgui_impl_dx11.h"
 #include "imgui_impl_win32.h"
 #include <algorithm>
+#include <cctype>
+#include <filesystem>
 #include <vector>
 
 static const char* IMAGE_FILTER = "Image Files\0*.jpg;*.jpeg;*.png;*.bmp\0All Files\0*.*\0";
+
+namespace
+{
+  namespace impl
+  {
+    // Relative to the working directory (the repo root when run from VS)
+    inline const char* shapesFolder = "shapes";
+
+    // "C:/a/b\\c.png" -> "c.png", either slash
+    std::string FileName(const std::string& path)
+    {
+      return path.substr(path.find_last_of("/\\") + 1);
+    }
+
+    bool IsImage(const std::filesystem::path& path)
+    {
+      std::string ext = path.extension().string();
+      std::transform(ext.begin(), ext.end(), ext.begin(), [](unsigned char c) { return char(std::tolower(c)); });
+      return ext == ".png" || ext == ".jpg" || ext == ".jpeg" || ext == ".bmp";
+    }
+  }
+}
 
 igWindowUI::igWindowUI(igWindow* pWindow, igCanvasRenderer* pRenderer)
   : m_pWindow(pWindow),
@@ -19,10 +43,6 @@ igWindowUI::igWindowUI(igWindow* pWindow, igCanvasRenderer* pRenderer)
   ImGui::StyleColorsDark();
   ImGui_ImplWin32_Init(m_pWindow->Handle());
   ImGui_ImplDX11_Init(m_pRenderer->Device(), m_pRenderer->Context());
-
-  //m_generation.AddMask("shapes/rectangle.png");
-  m_generation.AddMask("shapes/circle.png");
-  //m_generation.AddMask("shapes/triangle.png");
 }
 
 igWindowUI::~igWindowUI()
@@ -31,6 +51,81 @@ igWindowUI::~igWindowUI()
   ImGui_ImplDX11_Shutdown();
   ImGui_ImplWin32_Shutdown();
   ImGui::DestroyContext(m_pCtx);
+}
+
+void igWindowUI::AddMask(std::string path)
+{
+  if (path.empty())
+    return; // cancelled the file dialog
+
+  const std::string name = impl::FileName(path);
+  m_maskError = m_generation.AddMask(std::move(path)) ? "" : "Couldn't load " + name;
+}
+
+void igWindowUI::DrawMasks()
+{
+  ImGui::SeparatorText("Masks");
+
+  const auto& masks = m_generation.GetMasks();
+  if (masks.empty())
+    ImGui::TextDisabled("No masks yet, add one below");
+
+  // One row per mask: name on the left, remove button on the right
+  int removeIndex = -1;
+  for (size_t i = 0; i < masks.size(); i++)
+  {
+    const igMask& mask = *masks[i];
+    ImGui::PushID(int(i));
+
+    ImGui::AlignTextToFramePadding();
+    ImGui::TextUnformatted(impl::FileName(mask.id).c_str());
+    if (ImGui::IsItemHovered())
+      ImGui::SetTooltip("%s\n%lld x %lld", mask.id.c_str(), mask.Width(), mask.Height());
+
+    ImGui::SameLine(ImGui::GetContentRegionAvail().x + ImGui::GetCursorStartPos().x - 60);
+    ImGui::BeginDisabled(m_generation.IsRunning());
+    if (ImGui::Button("Remove", ImVec2(60, 0)))
+      removeIndex = int(i);
+    ImGui::EndDisabled();
+    if (m_generation.IsRunning() && ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled))
+      ImGui::SetTooltip("Can't remove masks while generating");
+
+    ImGui::PopID();
+  }
+
+  // Remove after the loop so the list doesn't change under it
+  if (removeIndex >= 0)
+    m_generation.RemoveMask(size_t(removeIndex));
+
+  // Add from the shapes/ folder (listed fresh each time the dropdown opens)
+  ImGui::SetNextItemWidth(260 - 70 - ImGui::GetStyle().ItemSpacing.x);
+  if (ImGui::BeginCombo("##addShape", "Add from shapes/"))
+  {
+    std::error_code error;
+    bool any = false;
+    for (const auto& entry : std::filesystem::directory_iterator(impl::shapesFolder, error))
+    {
+      if (!entry.is_regular_file() || !impl::IsImage(entry.path()))
+        continue;
+
+      any = true;
+      if (ImGui::Selectable(entry.path().filename().string().c_str()))
+        AddMask(entry.path().string());
+    }
+    if (!any)
+      ImGui::TextDisabled("Nothing in %s/", impl::shapesFolder);
+    ImGui::EndCombo();
+  }
+
+  ImGui::SameLine();
+  if (ImGui::Button("Browse", ImVec2(70, 0)))
+    AddMask(m_pWindow->OpenFileDialog(IMAGE_FILTER));
+
+  if (!m_maskError.empty())
+    ImGui::TextColored(ImVec4(1.0f, 0.4f, 0.4f, 1.0f), "%s", m_maskError.c_str());
+
+  if (m_generation.IsRunning())
+    ImGui::TextDisabled("New masks are used from the next run");
 }
 
 void igWindowUI::Render()
@@ -105,14 +200,21 @@ void igWindowUI::DrawControls()
   if (!gpuAvailable)
     ImGui::TextDisabled("No CUDA device found");
 
+  DrawMasks();
+
   ImGui::Separator();
 
   if (!m_generation.IsRunning())
   {
-    if (ImGui::Button("Generate", ImVec2(260, 50)) && !m_selectedFilepath.empty())
+    const bool canStart = !m_selectedFilepath.empty() && !m_generation.GetMasks().empty();
+    ImGui::BeginDisabled(!canStart);
+    if (ImGui::Button("Generate", ImVec2(260, 50)))
     {
       m_generation.Start(m_selectedFilepath);
     }
+    ImGui::EndDisabled();
+    if (!canStart)
+      ImGui::TextDisabled(m_selectedFilepath.empty() ? "Pick an image first" : "Add a mask first");
   }
   else
   {

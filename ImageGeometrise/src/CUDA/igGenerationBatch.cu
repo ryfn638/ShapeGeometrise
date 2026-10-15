@@ -183,7 +183,7 @@ bool igGenerationBatch::Available()
   return cudaGetDeviceCount(&count) == cudaSuccess && count > 0;
 }
 
-bool igGenerationBatch::SetMasks(const std::vector<igMask>& masks)
+bool igGenerationBatch::SetMasks(const std::vector<const igMask*>& masks)
 {
   cudaFree(m_pMaskData);
   cudaFree(m_pMasks);
@@ -193,8 +193,8 @@ bool igGenerationBatch::SetMasks(const std::vector<igMask>& masks)
 
   // All masks in one buffer, plus a span per mask pointing into it
   size_t totalBytes = 0;
-  for (const igMask& mask : masks)
-    totalBytes += mask.GetData().size();
+  for (const igMask* pMask : masks)
+    totalBytes += pMask->GetData().size();
 
   CUDA_CHECK(cudaMalloc(&m_pMaskData, (std::max)(totalBytes, size_t(1))));
 
@@ -202,10 +202,10 @@ bool igGenerationBatch::SetMasks(const std::vector<igMask>& masks)
   size_t offset = 0;
   for (size_t i = 0; i < masks.size(); i++)
   {
-    const std::vector<uint8_t>& data = masks[i].GetData();
+    const std::vector<uint8_t>& data = masks[i]->GetData();
     CUDA_CHECK(cudaMemcpy(m_pMaskData + offset, data.data(), data.size(), cudaMemcpyHostToDevice));
-    spans.push_back({ m_pMaskData + offset, igVec2(masks[i].Width(), masks[i].Height()) });
-    m_maskIndices[&masks[i]] = int(i);
+    spans.push_back({ m_pMaskData + offset, igVec2(masks[i]->Width(), masks[i]->Height()) });
+    m_maskIndices[masks[i]] = int(i);
     offset += data.size();
   }
 

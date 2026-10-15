@@ -16,7 +16,7 @@ class igMask
 public:
   // Solid rectangle
   igMask(int64_t width, int64_t height);
-  igMask(const std::string& filePath, double backgroundLenience);
+  igMask(std::string&& filePath, double backgroundLenience);
 
   int64_t Width() const
   {
@@ -39,6 +39,7 @@ public:
     return m_data;
   }
 
+  std::string id;
 private:
   int64_t m_width = 0;
   int64_t m_height = 0;

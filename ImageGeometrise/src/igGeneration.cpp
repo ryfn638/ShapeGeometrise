@@ -36,9 +36,31 @@ igGeneration::~igGeneration()
   Stop();
 }
 
-void igGeneration::AddMask(const std::string& path, double backgroundLenience)
+bool igGeneration::AddMask(std::string&& path, double backgroundLenience)
 {
-  m_masks.emplace_back(path, backgroundLenience);
+  if (path.empty())
+    return false;
+
+  for (const std::unique_ptr<igMask>& pMask : m_masks)
+    if (pMask->id == path)
+      return true;
+
+  std::unique_ptr<igMask> pMask = std::make_unique<igMask>(std::move(path), backgroundLenience);
+  if (pMask->Width() == 0)
+    return false;
+
+  m_masks.push_back(std::move(pMask));
+  return true;
+}
+
+bool igGeneration::RemoveMask(size_t index)
+{
+  // The running generation still has pointers to these
+  if (m_running || index >= m_masks.size())
+    return false;
+
+  m_masks.erase(m_masks.begin() + index);
+  return true;
 }
 
 bool igGeneration::Start(const std::string& targetPath)
@@ -48,6 +70,10 @@ bool igGeneration::Start(const std::string& targetPath)
 
   if (m_thread.joinable())
     m_thread.join();
+
+  m_runMasks.clear();
+  for (const std::unique_ptr<igMask>& pMask : m_masks)
+    m_runMasks.push_back(pMask.get());
 
   m_target = igCanvas::LoadImageCanvas(targetPath);
   if (m_target.Empty())
@@ -107,7 +133,7 @@ void igGeneration::Run()
   igCanvas target;
   float currentScale = -1.0f;
 
-  if (m_runSettings.useGpu && !m_gpu.SetMasks(m_masks))
+  if (m_runSettings.useGpu && !m_gpu.SetMasks(m_runMasks))
     m_runSettings.useGpu = false;
 
   const int numShapes = m_runSettings.numShapes;
@@ -174,7 +200,7 @@ igShape igGeneration::FindBestShape(const igCanvas& canvas, const igCanvas& targ
 
   Clock::time_point start = Clock::now();
 
-  std::vector<igShape> topShapes(impl::topNSize, CreateShape(nullptr, &m_masks[0], target));
+  std::vector<igShape> topShapes(impl::topNSize, CreateShape(nullptr, m_runMasks[0], target));
   m_currentTiming.createMs += MsSince(start);
 
   std::vector<igShape> candidates;
@@ -189,7 +215,7 @@ igShape igGeneration::FindBestShape(const igCanvas& canvas, const igCanvas& targ
       auto& topShape = topShapes[i % impl::topNSize];
 
       // Spread the masks evenly over the generation
-      const igMask* pMask = &m_masks[(i * m_masks.size()) / generationShapes];
+      const igMask* pMask = m_runMasks[(i * m_runMasks.size()) / generationShapes];
       // On the GPU path the average colour is filled in by the GPU during grading
       const bool cpuColour = !m_runSettings.useGpu;
       candidates.push_back((g == 0) ? CreateShape(nullptr, pMask, target, cpuColour)

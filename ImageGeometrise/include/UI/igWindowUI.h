@@ -26,6 +26,9 @@ private:
   void DrawCanvas();
   void DrawDiagnostics();
 
+  void DrawMasks();
+  void AddMask(std::string path);
+
   igWindow* m_pWindow;
   igCanvasRenderer* m_pRenderer;
   ImGuiContext* m_pCtx;
@@ -33,5 +36,6 @@ private:
   std::string m_selectedFilepath;
   igGeneration m_generation;
   bool m_showDiagnostics = false;
+  std::string m_maskError;
 };
 #endif
