@@ -84,6 +84,12 @@ public:
   // Copy of the timings for the current/last run, one per placed shape
   std::vector<igShapeTiming> Timings() const;
 
+  // Full resolution target of the current/last run (empty before the first Start)
+  const igCanvas& Target() const
+  {
+    return m_target;
+  }
+
 private:
   void Run();
 

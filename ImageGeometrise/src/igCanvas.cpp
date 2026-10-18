@@ -1,5 +1,6 @@
 #include "igCanvas.h"
 #include "igShape.h"
+#include <cstdlib>
 #include <opencv2/core.hpp>
 #include <opencv2/imgcodecs.hpp>
 #include <opencv2/imgproc.hpp>
@@ -96,4 +97,22 @@ igCanvas igCanvas::Resized(const igVec2& size) const
   }
 
   return newCanvas;
+}
+
+double igCanvas::Similarity(const igCanvas& other) const
+{
+  if (Empty() || m_dimensions != other.m_dimensions)
+    return 0.0;
+
+  uint64_t totalDiff = 0;
+  for (size_t i = 0; i < m_data.size(); i++)
+  {
+    const igColour& a = m_data[i];
+    const igColour& b = other.m_data[i];
+    totalDiff += std::abs(int(a.red) - int(b.red)) +
+                 std::abs(int(a.green) - int(b.green)) +
+                 std::abs(int(a.blue) - int(b.blue));
+  }
+
+  return 1.0 - double(totalDiff) / (double(m_data.size()) * 3.0 * 255.0);
 }

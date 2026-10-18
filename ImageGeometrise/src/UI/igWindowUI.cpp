@@ -231,6 +231,27 @@ void igWindowUI::DrawControls()
   ImGui::Separator();
   ImGui::Checkbox("Diagnostics", &m_showDiagnostics);
 
+  ImGui::Checkbox("Similarity to target", &m_showSimilarity);
+  if (m_showSimilarity)
+  {
+    const igCanvas& target = m_generation.Target();
+    if (target.Empty())
+    {
+      ImGui::TextDisabled("Run a generation first");
+    }
+    else
+    {
+      // Full pass over both images, so only redo it when a new shape has been drawn
+      const int shape = m_generation.CurrentShape();
+      if (shape != m_similarityShape)
+      {
+        m_similarity = m_pRenderer->CanvasSimilarity(target);
+        m_similarityShape = shape;
+      }
+      ImGui::Text("Similarity: %.2f%%", m_similarity * 100.0);
+    }
+  }
+
   ImGui::EndChild();
 }
 

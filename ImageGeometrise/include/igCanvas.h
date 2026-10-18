@@ -37,6 +37,10 @@ public:
   // Resamples to a new size (used by the coarse to fine stages)
   igCanvas Resized(const igVec2& size) const;
 
+  // How close this canvas is to another of the same size, 0 to 1 (1 = identical):
+  // 1 - mean absolute difference per RGB channel / 255. 0 if the sizes don't match.
+  double Similarity(const igCanvas& other) const;
+
 private:
   igVec2 m_dimensions;
   std::vector<igColour> m_data;

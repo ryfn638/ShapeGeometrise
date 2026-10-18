@@ -36,6 +36,9 @@ public:
   void ProjectShape(const igShape& shape);
   igVec2 CanvasSize() const;
 
+  // Similarity of the displayed canvas to target (see igCanvas::Similarity)
+  double CanvasSimilarity(const igCanvas& target) const;
+
   // UI thread, once a frame: uploads the canvas to the texture if it changed
   void UpdateCanvas();
   ID3D11ShaderResourceView* CanvasTexture() const

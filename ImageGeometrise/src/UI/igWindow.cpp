@@ -75,7 +75,8 @@ std::string igWindow::OpenFileDialog(const char* filter) const
   ofn.lpstrFilter = filter;
   ofn.lpstrFile = filename;
   ofn.nMaxFile = MAX_PATH;
-  ofn.Flags = OFN_FILEMUSTEXIST | OFN_PATHMUSTEXIST;
+  // NOCHANGEDIR: otherwise the dialog moves the working directory and shapes/ stops resolving
+  ofn.Flags = OFN_FILEMUSTEXIST | OFN_PATHMUSTEXIST | OFN_NOCHANGEDIR;
 
   if (GetOpenFileNameA(&ofn))
   {

@@ -18,10 +18,17 @@ for %%a in (%*) do (
     if /i "%%a"=="open" (set OPEN=1) else (set ACTION=%%a)
 )
 
+:: premake5 on PATH, or premake5.exe dropped next to this file
+set PREMAKE=premake5
 where premake5 >nul 2>&1
 if %ERRORLEVEL% neq 0 (
-    echo [error] premake5 not found on PATH. Get it from https://premake.github.io/download
-    exit /b 1
+    if exist "%~dp0premake5.exe" (
+        set PREMAKE="%~dp0premake5.exe"
+    ) else (
+        echo [error] premake5 not found. Get premake5.exe from https://premake.github.io/download
+        echo         and put it on PATH or next to createproject.bat.
+        exit /b 1
+    )
 )
 
 pushd "%~dp0"
@@ -30,7 +37,7 @@ pushd "%~dp0"
 if exist ".gitmodules" git submodule update --init --recursive
 
 echo [build] Generating %ACTION% solution...
-premake5 %ACTION%
+%PREMAKE% %ACTION%
 if %ERRORLEVEL% neq 0 (
     echo [error] premake failed.
     popd

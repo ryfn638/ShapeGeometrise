@@ -47,10 +47,15 @@ return {
 
     -- Installed CUDA toolkit (CUDA_PATH is set by the installer).
     -- VS doesn't compile .cu files from premake on its own, so each one gets an nvcc build step.
+    -- Without the toolkit it still builds, CPU only: the .cu files are left out and
+    -- igGenerationBatch_nocuda.cpp stands in (the GPU checkbox shows as unavailable).
     cuda = function()
       local root = os.getenv("CUDA_PATH")
       if root == nil then
-        error("CUDA_PATH isn't set. Install the CUDA toolkit, or drop \"cuda\" from project.lua.", 0)
+        print("[warning] CUDA_PATH isn't set, building without CUDA (CPU grading only)")
+        defines { "IG_NO_CUDA" }
+        removefiles { "**.cu" }
+        return
       end
       root = path.normalize(root)
 
@@ -58,9 +63,15 @@ return {
       libdirs { root .. "/lib/x64" }
       links { "cudart_static" }
 
-      -- Same include paths as the C++ side. -arch=native builds for the GPU in this machine.
+      -- Every architecture CUDA 13 supports (Turing to Blackwell), plus PTX so newer GPUs can
+      -- JIT it. -arch=native would only run on the GPU of the machine that built it.
+      local archs = "-gencode arch=compute_75,code=sm_75 -gencode arch=compute_80,code=sm_80"
+        .. " -gencode arch=compute_86,code=sm_86 -gencode arch=compute_89,code=sm_89"
+        .. " -gencode arch=compute_90,code=sm_90 -gencode arch=compute_120,code=[sm_120,compute_120]"
+
+      -- Same include paths as the C++ side
       local includes = '%{table.implode(table.join(cfg.includedirs, cfg.externalincludedirs), \'-I"\', \'"\', " ")}'
-      local nvcc = '"' .. root .. '/bin/nvcc.exe" -c -std=c++20 -arch=native ' .. includes
+      local nvcc = '"' .. root .. '/bin/nvcc.exe" -c -std=c++20 ' .. archs .. ' ' .. includes
         .. ' -o "%{cfg.objdir}/%{file.basename}.cu.obj" "%{file.abspath}"'
 
       filter "files:**.cu"

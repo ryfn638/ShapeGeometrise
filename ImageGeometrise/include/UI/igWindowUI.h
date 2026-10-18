@@ -36,6 +36,10 @@ private:
   std::string m_selectedFilepath;
   igGeneration m_generation;
   bool m_showDiagnostics = false;
+
+  bool m_showSimilarity = false;
+  double m_similarity = 0.0;
+  int m_similarityShape = -1; // shape count the cached similarity was taken at
   std::string m_maskError;
 };
 #endif

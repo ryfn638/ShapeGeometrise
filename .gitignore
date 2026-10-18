@@ -1,3 +1,6 @@
 build/
 packages/
 .vs/
+
+# Report (LaTeX source and build output) isn't part of the program
+report/

@@ -142,6 +142,13 @@ igVec2 igCanvasRenderer::CanvasSize() const
   return m_canvas.Size();
 }
 
+double igCanvasRenderer::CanvasSimilarity(const igCanvas& target) const
+{
+  // The worker thread projects onto this canvas, so hold the lock while reading it
+  std::lock_guard<std::mutex> lock(m_canvasMutex);
+  return m_canvas.Similarity(target);
+}
+
 void igCanvasRenderer::UpdateCanvas()
 {
   if (!m_pd3dDevice || !m_canvasDirty)
